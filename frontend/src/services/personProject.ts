@@ -9,6 +9,7 @@ export interface PersonProjectQueryParams {
   person_id?: number
   status?: string
   owner_id?: number
+  search?: string
 }
 
 export const personProjectApi = {
@@ -48,5 +49,9 @@ export const personProjectApi = {
   reassign: async (id: number, data: ReassignRequest): Promise<PersonProject> => {
     const response = await apiClient.post<ApiResponse<PersonProject>>(`/api/v1/person-projects/${id}/reassign`, data)
     return response.data.data
+  },
+
+  delete: async (id: number): Promise<void> => {
+    await apiClient.delete(`/api/v1/person-projects/${id}`)
   },
 }

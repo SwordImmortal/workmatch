@@ -6,6 +6,7 @@ import type { Person } from '../../types/person'
 import type { ColumnsType } from 'antd/es/table'
 import PersonFormModal from './PersonFormModal'
 import PersonDetailDrawer from './PersonDetailDrawer'
+import PersonImportModal from './PersonImportModal'
 
 const sourceOptions = [
   { value: 'boss', label: 'BOSS直聘' },
@@ -38,6 +39,9 @@ const PersonList: React.FC = () => {
   // Drawer 状态
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [selectedPersonId, setSelectedPersonId] = useState<number | null>(null)
+
+  // Import Modal 状态
+  const [importModalOpen, setImportModalOpen] = useState(false)
 
   const fetchData = async () => {
     setLoading(true)
@@ -210,7 +214,7 @@ const PersonList: React.FC = () => {
             />
           </Space>
           <Space>
-            <Button icon={<UploadOutlined />}>导入</Button>
+            <Button icon={<UploadOutlined />} onClick={() => setImportModalOpen(true)}>导入</Button>
             <Button icon={<ExportOutlined />} onClick={() => personApi.exportExcel(params)}>
               导出
             </Button>
@@ -250,6 +254,15 @@ const PersonList: React.FC = () => {
         onClose={() => {
           setDrawerOpen(false)
           setSelectedPersonId(null)
+        }}
+      />
+
+      <PersonImportModal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onSuccess={() => {
+          setImportModalOpen(false)
+          fetchData()
         }}
       />
     </div>

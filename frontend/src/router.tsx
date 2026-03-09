@@ -24,6 +24,7 @@ const Dashboard = React.lazy(() => import('./pages/Dashboard'))
 const PersonList = React.lazy(() => import('./pages/person/PersonList'))
 const ProjectList = React.lazy(() => import('./pages/project/ProjectList'))
 const EnterpriseList = React.lazy(() => import('./pages/enterprise/EnterpriseList'))
+const PersonProjectList = React.lazy(() => import('./pages/personProject/PersonProjectList'))
 
 export const router = createBrowserRouter([
   {
@@ -63,6 +64,14 @@ export const router = createBrowserRouter([
         element: (
           <React.Suspense fallback={<div>Loading...</div>}>
             <EnterpriseList />
+          </React.Suspense>
+        ),
+      },
+      {
+        path: 'person-projects',
+        element: (
+          <React.Suspense fallback={<div>Loading...</div>}>
+            <PersonProjectList />
           </React.Suspense>
         ),
       },
