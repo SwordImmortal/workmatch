@@ -99,12 +99,21 @@ npm run dev
 | 阶段 | 内容 | 状态 |
 |------|------|:----:|
 | Phase 0 | 项目初始化 | ✅ 完成 |
-| Phase 1 | 数据库设计 + 后端基础架构 | 待开始 |
-| Phase 2 | 用户认证 + 权限 | 待开始 |
-| Phase 3 | 人员管理 | 待开始 |
-| Phase 4 | 项目/企业管理 | 待开始 |
-| Phase 5 | 人员-项目关联 + 状态流转 | 待开始 |
-| Phase 6 | 跟进提醒模块 | 待开始 |
-| Phase 7 | 统计模块 | 待开始 |
-| Phase 8 | 集成测试 | 待开始 |
-| Phase 9 | 部署上线 | 待开始 |
+| Phase 1 | 数据库设计 + 后端基础架构 | ✅ 完成 |
+| Phase 2 | 用户认证 + 权限 | ✅ 完成 |
+| Phase 3 | 人员管理 | ✅ 完成 |
+| Phase 4 | 项目/企业管理 | ✅ 完成 |
+| Phase 5 | 人员-项目关联 + 状态流转 | ✅ 完成 |
+| Phase 6 | 跟进提醒模块 | ✅ 完成 |
+| Phase 7 | 统计模块 | ✅ 完成 |
+| Phase 8 | 安全加固 + API 路由层 | ✅ 完成 |
+| Phase 9 | 前端开发 | 📋 待开始 |
+| Phase 10 | 部署上线 | 📋 待开始 |
+
+### 后端完成情况
+
+- **数据模型**: 8 个（User, Enterprise, Project, Person, PersonProject, FollowUp, Reminder, StatusHistory）
+- **服务层**: 8 个（Auth, Person, Enterprise, Project, PersonProject, FollowUp, Reminder, Statistics）
+- **API 路由**: 8 个模块，共 40+ 个端点
+- **单元测试**: 101 个，全部通过
+- **安全特性**: 权限验证、统一错误处理、分页限制、速率限制
