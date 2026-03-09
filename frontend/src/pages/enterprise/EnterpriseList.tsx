@@ -4,12 +4,17 @@ import { PlusOutlined, TeamOutlined } from '@ant-design/icons'
 import { enterpriseApi } from '../../services/project'
 import type { Enterprise } from '../../types/project'
 import type { ColumnsType } from 'antd/es/table'
+import EnterpriseFormModal from './EnterpriseFormModal'
 
 const EnterpriseList: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState<Enterprise[]>([])
   const [total, setTotal] = useState(0)
   const [params, setParams] = useState({ skip: 0, limit: 20 })
+
+  // Modal 状态
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingEnterprise, setEditingEnterprise] = useState<Enterprise | undefined>()
 
   const fetchData = async () => {
     setLoading(true)
@@ -27,6 +32,31 @@ const EnterpriseList: React.FC = () => {
   useEffect(() => {
     fetchData()
   }, [params])
+
+  const handleCreate = () => {
+    setEditingEnterprise(undefined)
+    setModalOpen(true)
+  }
+
+  const handleEdit = (enterprise: Enterprise) => {
+    setEditingEnterprise(enterprise)
+    setModalOpen(true)
+  }
+
+  const handleDelete = async (id: number) => {
+    try {
+      await enterpriseApi.delete(id)
+      message.success('删除成功')
+      fetchData()
+    } catch (error) {
+      message.error('删除失败')
+    }
+  }
+
+  const handleModalSuccess = () => {
+    setModalOpen(false)
+    fetchData()
+  }
 
   const columns: ColumnsType<Enterprise> = [
     {
@@ -67,19 +97,20 @@ const EnterpriseList: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 120,
+      width: 150,
+      fixed: 'right',
       render: (_: unknown, record: Enterprise) => (
         <Space size="small">
-          <Button type="link" size="small">编辑</Button>
+          <Button type="link" size="small" onClick={() => handleEdit(record)}>
+            编辑
+          </Button>
           <Popconfirm
             title="确定删除？"
-            onConfirm={async () => {
-              await enterpriseApi.delete(record.id)
-              message.success('删除成功')
-              fetchData()
-            }}
+            onConfirm={() => handleDelete(record.id)}
           >
-            <Button type="link" size="small" danger>删除</Button>
+            <Button type="link" size="small" danger>
+              删除
+            </Button>
           </Popconfirm>
         </Space>
       ),
@@ -89,9 +120,14 @@ const EnterpriseList: React.FC = () => {
   return (
     <div>
       <Card
-        title="企业管理"
+        title={
+          <Space>
+            <TeamOutlined />
+            <span>企业管理</span>
+          </Space>
+        }
         extra={
-          <Button type="primary" icon={<PlusOutlined />}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
             新增企业
           </Button>
         }
@@ -112,6 +148,13 @@ const EnterpriseList: React.FC = () => {
           }}
         />
       </Card>
+
+      <EnterpriseFormModal
+        open={modalOpen}
+        enterprise={editingEnterprise}
+        onClose={() => setModalOpen(false)}
+        onSuccess={handleModalSuccess}
+      />
     </div>
   )
 }

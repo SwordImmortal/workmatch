@@ -1,9 +1,26 @@
 import { useState, useEffect } from 'react'
-import { Table, Card, Button, Space, Input, Select, Tag, Popconfirm, message } from 'antd'
-import { PlusOutlined, SearchOutlined, ExportOutlined, UploadOutlined } from '@ant-design/icons'
+import { Table, Card, Button, Space, Input, Select, Tag, Popconfirm, message, Drawer } from 'antd'
+import { PlusOutlined, SearchOutlined, ExportOutlined, UploadOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import { personApi, type PersonQueryParams } from '../../services/person'
 import type { Person } from '../../types/person'
 import type { ColumnsType } from 'antd/es/table'
+import PersonFormModal from './PersonFormModal'
+import PersonDetailDrawer from './PersonDetailDrawer'
+
+const sourceOptions = [
+  { value: 'boss', label: 'BOSS直聘' },
+  { value: 'kuaishou', label: '快手' },
+  { value: 'douyin', label: '抖音' },
+  { value: '58', label: '58同城' },
+  { value: 'referral', label: '内推' },
+  { value: 'other', label: '其他' },
+]
+
+const genderOptions = [
+  { value: 'male', label: '男' },
+  { value: 'female', label: '女' },
+  { value: 'unknown', label: '未知' },
+]
 
 const PersonList: React.FC = () => {
   const [loading, setLoading] = useState(false)
@@ -13,6 +30,14 @@ const PersonList: React.FC = () => {
     skip: 0,
     limit: 20,
   })
+
+  // Modal 状态
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingPerson, setEditingPerson] = useState<Person | undefined>()
+
+  // Drawer 状态
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [selectedPersonId, setSelectedPersonId] = useState<number | null>(null)
 
   const fetchData = async () => {
     setLoading(true)
@@ -30,6 +55,36 @@ const PersonList: React.FC = () => {
   useEffect(() => {
     fetchData()
   }, [params])
+
+  const handleCreate = () => {
+    setEditingPerson(undefined)
+    setModalOpen(true)
+  }
+
+  const handleEdit = (person: Person) => {
+    setEditingPerson(person)
+    setModalOpen(true)
+  }
+
+  const handleView = (id: number) => {
+    setSelectedPersonId(id)
+    setDrawerOpen(true)
+  }
+
+  const handleDelete = async (id: number) => {
+    try {
+      await personApi.delete(id)
+      message.success('删除成功')
+      fetchData()
+    } catch (error) {
+      message.error('删除失败')
+    }
+  }
+
+  const handleModalSuccess = () => {
+    setModalOpen(false)
+    fetchData()
+  }
 
   const columns: ColumnsType<Person> = [
     {
@@ -57,12 +112,8 @@ const PersonList: React.FC = () => {
       dataIndex: 'gender',
       width: 80,
       render: (gender: string) => {
-        const map: Record<string, string> = {
-          male: '男',
-          female: '女',
-          unknown: '未知',
-        }
-        return map[gender] || gender
+        const option = genderOptions.find(o => o.value === gender)
+        return option?.label || gender
       },
     },
     {
@@ -75,16 +126,8 @@ const PersonList: React.FC = () => {
       dataIndex: 'source',
       width: 100,
       render: (source: string) => {
-        const map: Record<string, { label: string; color: string }> = {
-          boss: { label: 'BOSS直聘', color: 'blue' },
-          kuaishou: { label: '快手', color: 'orange' },
-          douyin: { label: '抖音', color: 'purple' },
-          '58': { label: '58同城', color: 'cyan' },
-          referral: { label: '内推', color: 'green' },
-          other: { label: '其他', color: 'default' },
-        }
-        const item = map[source] || map.other
-        return <Tag color={item.color}>{item.label}</Tag>
+        const option = sourceOptions.find(o => o.value === source)
+        return <Tag color="blue">{option?.label || source}</Tag>
       },
     },
     {
@@ -106,19 +149,33 @@ const PersonList: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 150,
+      width: 200,
+      fixed: 'right',
       render: (_: unknown, record: Person) => (
         <Space size="small">
-          <Button type="link" size="small">查看</Button>
+          <Button
+            type="link"
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => handleView(record.id)}
+          >
+            查看
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+          >
+            编辑
+          </Button>
           <Popconfirm
             title="确定删除？"
-            onConfirm={async () => {
-              await personApi.delete(record.id)
-              message.success('删除成功')
-              fetchData()
-            }}
+            onConfirm={() => handleDelete(record.id)}
           >
-            <Button type="link" size="small" danger>删除</Button>
+            <Button type="link" size="small" danger icon={<DeleteOutlined />}>
+              删除
+            </Button>
           </Popconfirm>
         </Space>
       ),
@@ -135,13 +192,21 @@ const PersonList: React.FC = () => {
               prefix={<SearchOutlined />}
               style={{ width: 200 }}
               allowClear
-              onChange={(e) => setParams({ ...params, search: e.target.value || undefined })}
+              onChange={(e) => setParams({ ...params, search: e.target.value || undefined, skip: 0 })}
             />
             <Select
               placeholder="城市"
               style={{ width: 120 }}
               allowClear
-              onChange={(value) => setParams({ ...params, city: value || undefined })}
+              options={[]}
+              onChange={(value) => setParams({ ...params, city: value || undefined, skip: 0 })}
+            />
+            <Select
+              placeholder="来源"
+              style={{ width: 120 }}
+              allowClear
+              options={sourceOptions}
+              onChange={(value) => setParams({ ...params, source: value || undefined, skip: 0 })}
             />
           </Space>
           <Space>
@@ -149,7 +214,7 @@ const PersonList: React.FC = () => {
             <Button icon={<ExportOutlined />} onClick={() => personApi.exportExcel(params)}>
               导出
             </Button>
-            <Button type="primary" icon={<PlusOutlined />}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
               新增人员
             </Button>
           </Space>
@@ -171,6 +236,22 @@ const PersonList: React.FC = () => {
           }}
         />
       </Card>
+
+      <PersonFormModal
+        open={modalOpen}
+        person={editingPerson}
+        onClose={() => setModalOpen(false)}
+        onSuccess={handleModalSuccess}
+      />
+
+      <PersonDetailDrawer
+        open={drawerOpen}
+        personId={selectedPersonId}
+        onClose={() => {
+          setDrawerOpen(false)
+          setSelectedPersonId(null)
+        }}
+      />
     </div>
   )
 }

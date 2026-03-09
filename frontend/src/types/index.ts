@@ -32,6 +32,13 @@ export enum Source {
   OTHER = 'other',                   // 其他
 }
 
+// 性别枚举
+export enum Gender {
+  MALE = 'male',                     // 男
+  FEMALE = 'female',                 // 女
+  UNKNOWN = 'unknown',               // 未知
+}
+
 // API 响应结构
 export interface ApiResponse<T> {
   code: number
