@@ -73,3 +73,20 @@ class PersonProjectSummary(BaseModel):
 
 # 避免循环导入
 PersonWithProjectsResponse.model_rebuild()
+
+
+class ImportErrorItem(BaseModel):
+    """导入错误项。"""
+
+    row: int
+    field: str | None = None
+    message: str
+
+
+class PersonImportResult(BaseModel):
+    """人员导入结果。"""
+
+    success_count: int
+    fail_count: int
+    total: int
+    errors: list[ImportErrorItem]

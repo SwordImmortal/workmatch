@@ -5,6 +5,8 @@ from fastapi import APIRouter, HTTPException, Query, status
 from app.core.constants import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, validate_pagination
 from app.schemas.common import DataResponse, ListResponse, MessageResponse
 from app.schemas.person_project import (
+    BatchStatusChangeRequest,
+    BatchStatusChangeResponse,
     PersonProjectCreate,
     PersonProjectResponse,
     ReassignRequest,
@@ -126,6 +128,24 @@ async def change_status(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
+
+
+@router.post("/batch-status", response_model=DataResponse[BatchStatusChangeResponse])
+async def batch_change_status(
+    data: BatchStatusChangeRequest,
+    db: DBSession,
+    current_user: CurrentUser,
+):
+    """批量变更状态。"""
+    result = await pp_service.batch_advance_status(
+        db,
+        data.person_project_ids,
+        data.status,
+        changed_by=current_user.id,
+        fail_reason=data.fail_reason,
+        fail_remark=data.fail_remark,
+    )
+    return DataResponse(data=BatchStatusChangeResponse(**result))
 
 
 @router.post("/{pp_id}/reassign", response_model=DataResponse[ReassignResponse])

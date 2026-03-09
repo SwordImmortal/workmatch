@@ -198,6 +198,34 @@ class PersonProjectService:
         await session.refresh(pp)
         return pp
 
+    async def batch_advance_status(
+        self,
+        session: AsyncSession,
+        pp_ids: list[int],
+        to_status: PersonProjectStatus,
+        changed_by: int,
+        fail_reason: FailReason | None = None,
+        fail_remark: str | None = None,
+    ) -> dict:
+        """批量推进状态流转。"""
+        results: list[int] = []
+        errors: list[dict] = []
+
+        for pp_id in pp_ids:
+            try:
+                await self.advance_status(
+                    session, pp_id, to_status, changed_by, fail_reason, fail_remark
+                )
+                results.append(pp_id)
+            except ValueError as e:
+                errors.append({"id": pp_id, "message": str(e)})
+
+        return {
+            "success_count": len(results),
+            "fail_count": len(errors),
+            "errors": errors,
+        }
+
     async def get_project_statistics(
         self, session: AsyncSession, project_id: int
     ) -> dict:

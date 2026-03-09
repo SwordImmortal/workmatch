@@ -73,3 +73,27 @@ class ReassignResponse(BaseModel):
     person_id: int
     project_id: int
     status: PersonProjectStatus
+
+
+class BatchStatusChangeRequest(BaseModel):
+    """批量状态变更请求。"""
+
+    person_project_ids: list[int]
+    status: PersonProjectStatus
+    fail_reason: FailReason | None = None
+    fail_remark: str | None = None
+
+
+class BatchErrorItem(BaseModel):
+    """批量操作错误项。"""
+
+    id: int
+    message: str
+
+
+class BatchStatusChangeResponse(BaseModel):
+    """批量状态变更响应。"""
+
+    success_count: int
+    fail_count: int
+    errors: list[BatchErrorItem]
