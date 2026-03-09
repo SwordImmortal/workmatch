@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { Layout, Menu, MenuProps } from 'antd'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { Layout, Menu, Dropdown, Avatar, Space } from 'antd'
+import type { MenuProps } from 'antd'
 import {
   UserOutlined,
   TeamOutlined,
@@ -7,53 +9,83 @@ import {
   FileTextOutlined,
   BellOutlined,
   BarChartOutlined,
-  SettingOutlined,
-  MenuFoldOutlined,
+  LogoutOutlined,
+  HomeOutlined,
 } from '@ant-design/icons'
+import { useAuthStore } from '../../store/index'
 
 const { Sider, Header, Content } = Layout
 
-const menuItems: MenuProps['items'] = [
-  {
-    key: '/persons',
-    icon: <UserOutlined />,
-    label: '人员管理',
-  },
-  {
-    key: '/projects',
-    icon: <ProjectOutlined />,
-    label: '项目管理',
-  },
-  {
-    key: '/enterprises',
-    icon: <TeamOutlined />,
-    label: '企业管理',
-  },
-  {
-    key: '/follow-ups',
-    icon: <FileTextOutlined />,
-    label: '跟进记录',
-  },
-  {
-    key: '/reminders',
-    icon: <BellOutlined />,
-    label: '提醒管理',
-  },
-  {
-    key: '/statistics',
-    icon: <BarChartOutlined />,
-    label: '数据统计',
-  },
-  {
-    key: '/settings',
-    icon: <SettingOutlined />,
-    label: '系统设置',
-  },
-]
+interface AppLayoutProps {
+  children: React.ReactNode
+}
 
-const AppLayout: React.FC = () => {
+const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false)
-  const [selectedKey, setSelectedKey] = useState('/persons')
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { user, logout } = useAuthStore()
+
+  const menuItems: MenuProps['items'] = [
+    {
+      key: '/',
+      icon: <HomeOutlined />,
+      label: '首页',
+    },
+    {
+      key: '/persons',
+      icon: <UserOutlined />,
+      label: '人员管理',
+    },
+    {
+      key: '/projects',
+      icon: <ProjectOutlined />,
+      label: '项目管理',
+    },
+    {
+      key: '/enterprises',
+      icon: <TeamOutlined />,
+      label: '企业管理',
+    },
+    {
+      key: '/follow-ups',
+      icon: <FileTextOutlined />,
+      label: '跟进记录',
+    },
+    {
+      key: '/reminders',
+      icon: <BellOutlined />,
+      label: '提醒管理',
+    },
+    {
+      key: '/statistics',
+      icon: <BarChartOutlined />,
+      label: '数据统计',
+    },
+  ]
+
+  const handleMenuClick: MenuProps['onClick'] = (e) => {
+    navigate(e.key)
+  }
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
+
+  const userMenuItems: MenuProps['items'] = [
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: '个人信息',
+    },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: '退出登录',
+      onClick: handleLogout,
+    },
+  ]
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -71,34 +103,53 @@ const AppLayout: React.FC = () => {
           bottom: 0,
         }}
       >
-        <div className="logo">
+        <div
+          style={{
+            height: 64,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: collapsed ? 16 : 20,
+            fontWeight: 'bold',
+            color: '#1890ff',
+            borderBottom: '1px solid #f0f0f0',
+          }}
+        >
           {collapsed ? 'WM' : 'WorkMatch'}
         </div>
         <Menu
           mode="inline"
-          selectedKeys={[selectedKey]}
+          selectedKeys={[location.pathname]}
           items={menuItems}
-          onClick={(e) => setSelectedKey(e.key)}
+          onClick={handleMenuClick}
         />
       </Sider>
-      <Layout style={{ marginLeft: collapsed ? 80 : 200 }}>
-        <Header style={{ background: '#fff', padding: '0 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {collapsed ? null : (
-              <MenuFoldOutlined
-                style={{ fontSize: '18px', cursor: 'pointer' }}
-                onClick={() => setCollapsed(!collapsed)}
-              />
-            )}
-            <h2 style={{ margin: 0 }}>WorkMatch</h2>
-          </div>
+      <Layout style={{ marginLeft: collapsed ? 80 : 200, transition: 'margin-left 0.2s' }}>
+        <Header
+          style={{
+            background: '#fff',
+            padding: '0 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: '1px solid #f0f0f0',
+          }}
+        >
+          <h3 style={{ margin: 0 }}>
+            {(() => {
+              const item = menuItems.find(item => item && 'key' in item && (item as { key: string }).key === location.pathname)
+              return item && 'label' in item ? (item as { label: string }).label : 'WorkMatch'
+            })()}
+          </h3>
+          <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+            <Space style={{ cursor: 'pointer' }}>
+              <Avatar icon={<UserOutlined />} />
+              <span>{user?.name || '用户'}</span>
+            </Space>
+          </Dropdown>
         </Header>
-        <Content style={{ margin: '16px', overflow: 'initial' }}>
-          <div style={{ padding: '24px', background: '#fff', borderRadius: '8px' }}>
-            <h2>欢迎使用 WorkMatch</h2>
-            <p>蓝领 RPO 招聘管理系统</p>
-            <p style={{ color: '#999' }}>请从左侧菜单选择功能模块开始操作</p>
-          </div>
+        <Content style={{ margin: 16, overflow: 'initial' }}>
+          {children}
         </Content>
       </Layout>
     </Layout>

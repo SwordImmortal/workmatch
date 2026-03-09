@@ -1,6 +1,7 @@
+import { RouterProvider } from 'react-router-dom'
 import { ConfigProvider } from 'antd'
 import zhCN from 'antd/locale/zh_CN'
-import AppLayout from './components/layout/AppLayout'
+import { router } from './router'
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
         },
       }}
     >
-      <AppLayout />
+      <RouterProvider router={router} />
     </ConfigProvider>
   )
 }
