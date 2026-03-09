@@ -7,6 +7,9 @@ __pycache__/
 venv/
 .venv/
 .env
+*.egg-info/
+.eggs/
+*.egg
 
 # Node
 node_modules/
@@ -26,3 +29,21 @@ Thumbs.db
 # Database
 *.db
 *.sqlite
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Project specific
+demand/
