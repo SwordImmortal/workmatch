@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Form, Input, Button, Card, message } from 'antd'
-import { UserOutlined, LockOutlined } from '@ant-design/icons'
+import { Form, Input, Button, message } from 'antd'
+import { UserOutlined, LockOutlined, TeamOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { authApi } from '../services/auth'
 import { useAuthStore } from '../store/index'
 import type { LoginRequest } from '../services/auth'
+import styles from './Login.module.css'
 
 const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false)
@@ -26,32 +27,42 @@ const LoginPage: React.FC = () => {
   }
 
   return (
-    <div style={{
-      height: '100vh',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-    }}>
-      <Card style={{ width: 400, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <h1 style={{ margin: '0 0 8px', color: '#1890ff' }}>WorkMatch</h1>
-          <p style={{ color: '#666', margin: 0 }}>蓝领 RPO 招聘管理系统</p>
+    <div className={styles.container}>
+      {/* 背景装饰 */}
+      <div className={styles.background}>
+        <div className={styles.shape1} />
+        <div className={styles.shape2} />
+        <div className={styles.shape3} />
+      </div>
+
+      {/* 登录卡片 */}
+      <div className={styles.loginCard}>
+        {/* Logo 和标题 */}
+        <div className={styles.header}>
+          <div className={styles.logoWrapper}>
+            <TeamOutlined className={styles.logo} />
+          </div>
+          <h1 className={styles.title}>WorkMatch</h1>
+          <p className={styles.subtitle}>蓝领 RPO 招聘管理系统</p>
         </div>
+
+        {/* 登录表单 */}
         <Form
           name="login"
           onFinish={onFinish}
           autoComplete="off"
           layout="vertical"
+          className={styles.form}
         >
           <Form.Item
             name="username"
             rules={[{ required: true, message: '请输入用户名' }]}
           >
             <Input
-              prefix={<UserOutlined />}
+              prefix={<UserOutlined className={styles.inputIcon} />}
               placeholder="用户名"
               size="large"
+              className={styles.input}
             />
           </Form.Item>
           <Form.Item
@@ -59,9 +70,10 @@ const LoginPage: React.FC = () => {
             rules={[{ required: true, message: '请输入密码' }]}
           >
             <Input.Password
-              prefix={<LockOutlined />}
+              prefix={<LockOutlined className={styles.inputIcon} />}
               placeholder="密码"
               size="large"
+              className={styles.input}
             />
           </Form.Item>
           <Form.Item>
@@ -71,12 +83,18 @@ const LoginPage: React.FC = () => {
               loading={loading}
               block
               size="large"
+              className={styles.loginButton}
             >
               登录
             </Button>
           </Form.Item>
         </Form>
-      </Card>
+
+        {/* 底部信息 */}
+        <div className={styles.footer}>
+          <p>© 2024 WorkMatch. All rights reserved.</p>
+        </div>
+      </div>
     </div>
   )
 }
